@@ -1,0 +1,13 @@
+{
+  "name": "fxazdobuttons",
+  "type": "module",
+  "version": "1.0.1",
+  "description": "",
+  "author": "Will Westrop",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^10.1.0",
+    "handlebars": "^4.7.7",
+    "web-ext": "^7.0.0"
+  }
+}
