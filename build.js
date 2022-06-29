@@ -12,22 +12,22 @@ const extensions = [
     { name: "Artifacts", icon: "artifacts.png", urlSuffix: "_artifacts", guid: "{a514e12a-c40d-4549-9541-79e72f0b3226}" }
 ];
 
-const version = JSON.parse(fs.readFileSync("package.json", { encoding: "utf8" })).version;
+const version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" })).version;
 
-const templateContent = fs.readFileSync("manifest.json.handlebars", { encoding: "utf8" });
+const templateContent = await fs.readFile("manifest.json.handlebars", { encoding: "utf8" });
 const transformManifestTemplate = handlebars.compile(templateContent);
 
-fs.emptyDirSync("dist/");
+await fs.emptyDir("dist/");
 for (let extension of extensions) {
    extension = {...extension, version};
 
     const outDir = `dist/${extension.name}/`;
-    fs.emptyDirSync(outDir);
-    fs.copySync("template/", outDir);
-    fs.copyFileSync(`icons/${extension.icon}`, `${outDir}/icon.png`);
+    await fs.emptyDir(outDir);
+    await fs.copy("template/", outDir);
+    await fs.copyFile(`icons/${extension.icon}`, `${outDir}/icon.png`);
 
     const manifest = transformManifestTemplate(extension);
-    fs.writeFileSync(`${outDir}/manifest.json`, manifest);
+    await fs.writeFile(`${outDir}/manifest.json`, manifest);
 
     await webExt.cmd.build({ sourceDir: `dist/${extension.name}`, artifactsDir: "dist/" });
 }

@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      - name: Restore dependencies
+        run: npm ci
+        
+      - name: Build
+        run: node ./build.js
+
+      - name: Save artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          path: dist/*.zip
+          retention-days: 90      # This is the maximum
