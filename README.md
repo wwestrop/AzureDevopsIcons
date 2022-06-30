@@ -1,4 +1,4 @@
-# Azure DevOps icons for Firefox
+# Azure DevOps icons
 
 Seemingly every website these days has a similar blue icon, making them all blur into one when your browser is overloaded with tabs and icons.
 
@@ -20,7 +20,16 @@ If using the extension only for the tab icons and not the buttons, then no confi
 # Building
 ```
 npm install
+```
+
+## Firefox
+```
 node ./build.js
+```
+
+## Chrome
+```
+node ./build-chrome.js
 ```
 
 # TODO

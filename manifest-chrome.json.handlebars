@@ -1,0 +1,36 @@
+{
+    "manifest_version": 3,
+    "name": "Azure DevOps icon [{{name}}]",
+    "version": "{{version}}",
+    "description": "Adds colour-coded tab icons and associated shortcut button for {{name}} on Azure DevOps",
+    "homepage_url": "https://github.com/wwestrop/AzureDevopsIcons",
+    "icons": {
+        "48":  "icon.png",
+        "32":  "icon.png",
+        "96":  "icon.png",
+        "16":  "icon.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.visualstudio.com/*",
+                "*://dev.azure.com/*"
+            ],
+            "js": [
+                "content-script.js"
+            ]
+        }
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "permissions": [ "tabs", "storage" ],
+    "action": {
+      "default_icon": "icon.png",
+      "default_title": "{{name}}",
+      "default_area": "personaltoolbar"
+    },
+    "options_ui": {
+        "page": "settings.html"
+    }
+}
