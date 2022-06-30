@@ -32,4 +32,4 @@ for (let extension of extensions) {
     await webExt.cmd.build({ sourceDir: `dist-chrome/${extension.name}`, artifactsDir: "dist-chrome/" });
 }
 
-console.log(`\n  ---> ${extensions.length} extensions created in dist/\n`);
+console.log(`\n  ---> ${extensions.length} extensions created in dist-chrome/\n`);
