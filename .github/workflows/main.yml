@@ -40,7 +40,7 @@ jobs:
           body: |
             **Note:** This release is not signed and will not be loaded by the browser directly.
             You are best advised to download it from the appropriate browser's extension gallery.
-            - [Firefox](https://addons.mozilla.org/en-GB/firefox/addon/azure-devops-icon-git)
+            - [Firefox](https://addons.mozilla.org/en-GB/firefox/search/?q=Azure%20DevOps%20icon)
             - [Chrome](https://chrome.google.com/webstore/category/extensions)
       
       - name: Upload Release Asset
