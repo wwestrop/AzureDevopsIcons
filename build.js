@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import handlebars from "handlebars";
+import zip from "jszip";
 import webExt from "web-ext";
 
 
@@ -19,7 +20,7 @@ const transformManifestTemplate = handlebars.compile(templateContent);
 
 await fs.emptyDir("dist/");
 for (let extension of extensions) {
-   extension = {...extension, version};
+    extension = {...extension, version};
 
     const outDir = `dist/${extension.name}/`;
     await fs.emptyDir(outDir);
@@ -32,4 +33,25 @@ for (let extension of extensions) {
     await webExt.cmd.build({ sourceDir: `dist/${extension.name}`, artifactsDir: "dist/" });
 }
 
+createPackage();
+
+console.log(`::set-output name=PKG_VERSION::${version}`);    // For GitHub runner
 console.log(`\n  ---> ${extensions.length} extensions created in dist/\n`);
+
+
+
+function createPackage() {
+    console.log("Packaging...");
+
+    var zipFile = new zip();
+    const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.zip`);
+    const zipFolder = zipFile.folder("firefox");
+
+    for (const fileName of fileNames) {
+        const fileData = fs.readFileSync(`dist/${fileName}`);
+        zipFolder.file(fileName, fileData);
+    }
+
+    zipFile.generateNodeStream({ type: "nodebuffer", streamFiles: true })
+        .pipe(fs.createWriteStream(`dist/azure_devops_icons_${version}.zip`));
+}

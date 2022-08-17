@@ -20,6 +20,7 @@ jobs:
         run: npm ci
         
       - name: Build
+        id: build
         run: node ./build.js
 
       - name: Save artifact
@@ -27,3 +28,27 @@ jobs:
         with:
           path: dist/*.zip
           retention-days: 90      # This is the maximum
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.build.outputs.PKG_VERSION }}
+          release_name: ${{ steps.build.outputs.PKG_VERSION }}
+          body: |
+            **Note:** This release is not signed and will not be loaded by the browser directly.
+            You are best advised to download it from the appropriate browser's extension gallery.
+            - [Firefox](https://addons.mozilla.org/en-GB/firefox/addon/azure-devops-icon-git)
+            - [Chrome](https://chrome.google.com/webstore/category/extensions)
+      
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/azure_devops_icons_${{ steps.build.outputs.PKG_VERSION }}.zip
+          asset_name: azure_devops_icons.zip
+          asset_content_type: application/zip

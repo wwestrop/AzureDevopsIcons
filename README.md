@@ -1,5 +1,7 @@
 # Azure DevOps icons
 
+[![Build status](https://github.com/wwestrop/AzureDevopsIcons/actions/workflows/main.yml/badge.svg)](https://github.com/wwestrop/AzureDevopsIcons/actions/workflows/main.yml)
+
 Seemingly every website these days has a similar blue icon, making them all blur into one when your browser is overloaded with tabs and icons.
 
 Azure DevOps is particularly bad as the site consists of several unrelated modules, all of which share the same icon, making hunting for a tab a pain.
