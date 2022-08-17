@@ -4,11 +4,6 @@ browser.runtime.onMessage.addListener((message) => {
     if (message.command.type === "updateFavicon") {
         updateFavicon();
     }
-    else if (message.command.type === "warnUnconfiguredUrl") {
-        alert("You've not configured a base URL for the extension");
-        // If you want the shortcut buttons to work you have to do this
-        // for every extension. Sorry.
-    }
 });
 
 
