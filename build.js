@@ -3,6 +3,8 @@ import handlebars from "handlebars";
 import zip from "jszip";
 import webExt from "web-ext";
 
+const browsers = ["firefox", "chrome"];
+
 
 const extensions = [
     { name: "Overview", icon: "overview.png", urlSuffix: "", guid: "{6955d06d-99e4-41bf-add9-14bcdb99ae1b}" },
@@ -14,44 +16,54 @@ const extensions = [
 ];
 
 const version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" })).version;
+console.log(`::set-output name=PKG_VERSION::${version}`);    // For GitHub runner
 
-const templateContent = await fs.readFile("manifest.json.handlebars", { encoding: "utf8" });
-const transformManifestTemplate = handlebars.compile(templateContent);
-
-await fs.emptyDir("dist/");
-for (let extension of extensions) {
-    extension = {...extension, version};
-
-    const outDir = `dist/${extension.name}/`;
-    await fs.emptyDir(outDir);
-    await fs.copy("template/", outDir);
-    await fs.copyFile(`icons/${extension.icon}`, `${outDir}/icon.png`);
-
-    const manifest = transformManifestTemplate(extension);
-    await fs.writeFile(`${outDir}/manifest.json`, manifest);
-
-    await webExt.cmd.build({ sourceDir: `dist/${extension.name}`, artifactsDir: "dist/" });
+for (const browser of browsers) {
+    await build(browser);
 }
 
-createPackage();
+async function build(browser) {
 
-console.log(`::set-output name=PKG_VERSION::${version}`);    // For GitHub runner
-console.log(`\n  ---> ${extensions.length} extensions created in dist/\n`);
+    const manifestFile = `manifest-${browser}.json.handlebars`;
+    console.log(`Building for ${browser} from '${manifestFile}'...\n`);
 
+    const templateContent = await fs.readFile(manifestFile, { encoding: "utf8" });
+    const transformManifestTemplate = handlebars.compile(templateContent);
 
+    await fs.emptyDir(`dist/${browser}/`);
+    for (let extension of extensions) {
+        extension = {...extension, version};
 
-function createPackage() {
-    console.log("Packaging...");
+        const outDir = `dist/${browser}/${extension.name}/`;
+        await fs.emptyDir(outDir);
+        await fs.copy(`template/${browser}/`, outDir);
+        await fs.copyFile(`icons/${extension.icon}`, `${outDir}/icon.png`);
 
-    var zipFile = new zip();
-    const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.zip`);
-    const zipFolder = zipFile.folder("firefox");
+        const manifest = transformManifestTemplate(extension);
+        await fs.writeFile(`${outDir}/manifest.json`, manifest);
 
-    for (const fileName of fileNames) {
-        const fileData = fs.readFileSync(`dist/${fileName}`);
-        zipFolder.file(fileName, fileData);
+        await webExt.cmd.build({ sourceDir: `dist/${browser}/${extension.name}`, artifactsDir: `dist/${browser}` });
     }
 
-    zipFile.generateNodeStream({ type: "nodebuffer", streamFiles: true })
-        .pipe(fs.createWriteStream(`dist/azure_devops_icons_${version}.zip`));
+    createPackage();
+
+    console.log(`\n  ---> ${extensions.length} extensions created in dist/${browser}\n\n`);
+
+
+
+    function createPackage() {
+        console.log("Packaging...");
+    
+        var zipFile = new zip();
+        const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.zip`);
+    
+        for (const fileName of fileNames) {
+            const fileData = fs.readFileSync(`dist/${browser}/${fileName}`);
+            zipFile.file(fileName, fileData);
+        }
+    
+        zipFile.generateNodeStream({ type: "nodebuffer", streamFiles: true })
+            .pipe(fs.createWriteStream(`dist/${browser}/azure_devops_icons_${version}.zip`));
+    }
+
 }
