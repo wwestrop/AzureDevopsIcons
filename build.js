@@ -1,3 +1,4 @@
+import processv from "process";
 import fs from "fs-extra";
 import handlebars from "handlebars";
 import zip from "jszip";
@@ -43,6 +44,15 @@ async function build(browser) {
         await fs.writeFile(`${outDir}/manifest.json`, manifest);
 
         await webExt.cmd.build({ sourceDir: `dist/${browser}/${extension.name}`, artifactsDir: `dist/${browser}` });
+
+        if (process.env["WEB_EXT_API_KEY"] && process.env["WEB_EXT_API_SECRET"]) {
+            await webExt.cmd.sign({
+                apiKey: process.env["WEB_EXT_API_KEY"],
+                apiSecret: process.env["WEB_EXT_API_SECRET"],
+                sourceDir: `dist/${browser}/${extension.name}`, 
+                artifactsDir: `dist/${browser}`
+            });
+        }
     }
 
     createPackage();
