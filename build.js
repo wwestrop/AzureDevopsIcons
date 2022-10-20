@@ -1,11 +1,24 @@
-import processv from "process";
+import process from "process";
 import fs from "fs-extra";
 import handlebars from "handlebars";
 import zip from "jszip";
 import webExt from "web-ext";
 
-const browsers = ["firefox", "chrome"];
 
+const browsers = [
+    {
+        name: "firefox",
+        format: "xpi",
+        secret: { /* whatver as appopriate to this store */ },
+        //sign: x => await call mozilla
+    },
+    {
+        name: "chrome",
+        format: "crx",
+        secret: { /* whatver as appopriate to this store */ },
+        //sign: x => await call google
+    }
+];
 
 const extensions = [
     { name: "Overview", icon: "overview.png", urlSuffix: "", guid: "{6955d06d-99e4-41bf-add9-14bcdb99ae1b}" },
@@ -25,55 +38,73 @@ for (const browser of browsers) {
 
 async function build(browser) {
 
-    const manifestFile = `manifest-${browser}.json.handlebars`;
-    console.log(`Building for ${browser} from '${manifestFile}'...\n`);
+    let extensions2 = extensions;
+    if (browser.name === "chrome") {
+        // HACK
+        extensions2 = [ { name: "icons", icon: "pipelines.png" } ];
+    }
+
+    const manifestFile = `manifest-${browser.name}.json.handlebars`;
+    console.log(`Building for ${browser.name} from '${manifestFile}'...\n`);
 
     const templateContent = await fs.readFile(manifestFile, { encoding: "utf8" });
     const transformManifestTemplate = handlebars.compile(templateContent);
 
-    await fs.emptyDir(`dist/${browser}/`);
-    for (let extension of extensions) {
+    await fs.emptyDir(`dist/${browser.name}/`);
+    for (let extension of extensions2) {
         extension = {...extension, version};
 
-        const outDir = `dist/${browser}/${extension.name}/`;
+        const outDir = `dist/${browser.name}/${extension.name}/`;
         await fs.emptyDir(outDir);
-        await fs.copy(`template/${browser}/`, outDir);
+        await fs.copy(`template/${browser.name}/`, outDir);
         await fs.copyFile(`icons/${extension.icon}`, `${outDir}/icon.png`);
 
         const manifest = transformManifestTemplate(extension);
         await fs.writeFile(`${outDir}/manifest.json`, manifest);
 
-        await webExt.cmd.build({ sourceDir: `dist/${browser}/${extension.name}`, artifactsDir: `dist/${browser}` });
-
-        if (process.env["WEB_EXT_API_KEY"] && process.env["WEB_EXT_API_SECRET"]) {
-            await webExt.cmd.sign({
-                apiKey: process.env["WEB_EXT_API_KEY"],
-                apiSecret: process.env["WEB_EXT_API_SECRET"],
-                sourceDir: `dist/${browser}/${extension.name}`, 
-                artifactsDir: `dist/${browser}`
-            });
-        }
+        await webExt.cmd.build({ sourceDir: `dist/${browser.name}/${extension.name}`, artifactsDir: `dist/${browser.name}` });
     }
 
-    createPackage();
+    if (process.env["WEB_EXT_API_KEY"] && process.env["WEB_EXT_API_SECRET"]) {
+        const signTasks = extensions2.map(extension => webExt.cmd.sign({
+            apiKey: process.env["WEB_EXT_API_KEY"],
+            apiSecret: process.env["WEB_EXT_API_SECRET"],
+            channel: "unlisted",            // if you don't do this, despite being called "sign", it will actually publish it
+                                            // But not give you the XPI
+                                            // "Your add-on has been submitted for review. It passed validation but could not be automatically signed because this is a listed add-on."
+            sourceDir: `dist/${browser.name}/${extension.name}`, 
+            artifactsDir: `dist/${browser.name}`
+        }));
 
-    console.log(`\n  ---> ${extensions.length} extensions created in dist/${browser}\n\n`);
+        await Promise.all(signTasks);
+    }
+
+    createPackage(browser);
+
+    console.log(`\n  ---> ${extensions2.length} extensions created in dist/${browser.name}\n\n`);
 
 
 
     function createPackage() {
+
+        if (browser.name === "chrome") {
+            // HACK
+            return;
+        }
+
         console.log("Packaging...");
     
         var zipFile = new zip();
         const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.zip`);
+        // const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.xpi`);
     
         for (const fileName of fileNames) {
-            const fileData = fs.readFileSync(`dist/${browser}/${fileName}`);
+            const fileData = fs.readFileSync(`dist/${browser.name}/${fileName}`);
             zipFile.file(fileName, fileData);
         }
     
         zipFile.generateNodeStream({ type: "nodebuffer", streamFiles: true })
-            .pipe(fs.createWriteStream(`dist/${browser}/azure_devops_icons_${version}.zip`));
+            .pipe(fs.createWriteStream(`dist/${browser.name}/azure_devops_icons_${version}.zip`));
     }
 
 }
