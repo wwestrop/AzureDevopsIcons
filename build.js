@@ -30,7 +30,7 @@ const extensions = [
 ];
 
 const version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" })).version;
-console.log(`::set-output name=PKG_VERSION::${version}`);    // For GitHub runner
+console.log(`name=PKG_VERSION::${version} >> $GITHUB_OUTPUT`);    // For GitHub runner
 
 for (const browser of browsers) {
     await build(browser);
