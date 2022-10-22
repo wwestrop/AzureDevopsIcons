@@ -2,36 +2,34 @@
 
 [![Build status](https://github.com/wwestrop/AzureDevopsIcons/actions/workflows/main.yml/badge.svg)](https://github.com/wwestrop/AzureDevopsIcons/actions/workflows/main.yml)
 
+**Find it at:** [Mozilla addons](https://addons.mozilla.org/en-GB/firefox/search/?q=Azure%20DevOps%20icon) or [Chrome webstore](https://chrome.google.com/webstore/detail/azure-devops-icons/pgbejjjgidgpciebpdiajlljpipdpcfe).
+
+-----
+
 Seemingly every website these days has a similar blue icon, making them all blur into one when your browser is overloaded with tabs and icons.
 
-Azure DevOps is particularly bad as the site consists of several unrelated modules, all of which share the same icon, making hunting for a tab a pain.
+Azure DevOps is particularly bad as the site consists of several different areas, all of which share the same icon, making hunting for a tab a pain.
 
-![Lots of common websites have similar blue icons making tabs and bookmarks harder to distinguish](doc/before.png)
-
-This set of browser extensions for Firefox gives each tab a distinct icon to help you more easily distinguish what you're viewing.
-
-![Now the the DevOps icons are colour-coded](doc/after.png)
-
-It also adds a button to the toolbar with corresponding icon as a shortcut to each area on Azure DevOps. You can edit the toolbar and drag these onto the bookmarks bar with your other shortcuts.
+![Animation showing before and after](doc/before-after.gif)
 
 # Configuration
-If using the shortcut buttons, you will need to configure the extension with the base URL of your Azure DevOps site (done via the extension configuration screen in the browser). Each shortcut button is a separate extension and this configuration step needs to be done for every button you install.
 
-If using the extension only for the tab icons and not the buttons, then no configuration is required, and you only need to install one extension.
+### For Chrome
+There is one extension to install, it applies automatically to tab icons and bookmarks, and requires no configuration.
+
+### For Firefox
+After installing one of these extensions, Firefox will use the correct icon on tabs, but not on bookmarks.
+
+To simulate bookmarks with appropriate icons, the extension is shipped as a set of six, one for each area of Azure DevOps, each with a toolbar button that acts as a shortcut to that area. You can customise the Firefox toolbar to move these buttons into the bookmark bar to simulate a saved bookmark.
+
+Because it's not a true bookmark, you must configure each extension with the URL of your Azure DevOps instance. To do this: right click the toolbar icon -> `Manage Extension` -> `Options` -> `DevOps Homepage` (do this for each extension)
+
+If you're using the extension only for the tab icons only, then you only need to install one extension (any of the six will do), and no configuration is required.
 
 # Building
 ```
 npm install
-```
-
-## Firefox
-```
-node ./build.js
-```
-
-## Chrome
-```
-node ./build-chrome.js
+npm run build
 ```
 
 # TODO
