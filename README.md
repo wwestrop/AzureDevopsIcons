@@ -22,7 +22,7 @@ After installing one of these extensions, Firefox will use the correct icon on t
 
 To simulate bookmarks with appropriate icons, the extension is shipped as a set of six, one for each area of Azure DevOps, each with a toolbar button that acts as a shortcut to that area. You can customise the Firefox toolbar to move these buttons into the bookmark bar to simulate a saved bookmark.
 
-Because it's not a true bookmark, you must configure each extension with the URL of your Azure DevOps instance. To do this: right click the toolbar icon -> `Manage Extension` -> `Options` -> `DevOps Homepage` (do this for each extension)
+Because it's not a true bookmark, you must configure each extension with the URL of your Azure DevOps instance. To do this: right click the toolbar icon -> `Manage Extension` -> `Options` -> `DevOps Homepage` and set the URL of your account (do this for each extension)
 
 If you're using the extension only for the tab icons only, then you only need to install one extension (any of the six will do), and no configuration is required.
 
@@ -31,6 +31,3 @@ If you're using the extension only for the tab icons only, then you only need to
 npm install
 npm run build
 ```
-
-# TODO
-As a nice enhancement, I would like the pipelines tab icon to show whether a build is running, succeeded, or failed so you can monitor it in the background.
