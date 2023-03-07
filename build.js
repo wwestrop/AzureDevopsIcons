@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import handlebars from "handlebars";
 import zip from "jszip";
 import webExt from "web-ext";
+import { execSync } from "child_process";
 
 
 const browsers = [
@@ -33,6 +34,8 @@ const version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" 
 if (process.env["GITHUB_OUTPUT"]) {
     fs.appendFile(process.env["GITHUB_OUTPUT"], `PKG_VERSION=${version}\n`);      // For GitHub runner
 }
+
+execSync("npm install");
 
 for (const browser of browsers) {
     await build(browser);
