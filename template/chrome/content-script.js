@@ -62,7 +62,7 @@ function getIcon() {
         || url.includes("/_testManagement/")) {
         return "https://cdn.vsassets.io/ext/ms.vss-test-web/common-content/Nav-Test.CLbC8LbdE5__mhtfT.png";
     }
-    else if (url.includes("/_artifacts")) {
+    else if (url.includes("/_artifacts") || url.includes("/_packaging")) {
         return "https://ms.gallerycdn.vsassets.io/extensions/ms/azure-artifacts/18.203.0.107787320/1652983730116/root/img/artifacts-icon.png";
     }
 }
