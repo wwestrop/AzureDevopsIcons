@@ -55,6 +55,7 @@ function getIcon() {
 
         // additionally check for "_build/results?" or _build?definitionId
         // to show the "is this build running" spinner icon
+        // TODO don't remember why I'm not doing this for Chrome, perhaps it didn't work?
 
         return "https://cdn.vsassets.io/ext/ms.vss-build-web/common-library/Nav-Launch.3tiJhd8JGiL0mrog.png";
     }
@@ -64,6 +65,10 @@ function getIcon() {
     }
     else if (url.includes("/_artifacts") || url.includes("/_packaging")) {
         return "https://ms.gallerycdn.vsassets.io/extensions/ms/azure-artifacts/18.203.0.107787320/1652983730116/root/img/artifacts-icon.png";
+    }
+    else {
+        // generic fallback icon
+        return "https://cdn.vsassets.io/content/icons/favicon.ico";
     }
 }
 

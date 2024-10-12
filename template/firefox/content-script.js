@@ -78,6 +78,10 @@ function getIcon() {
     else if (url.includes("/_artifacts") || url.includes("/_packaging")) {
         return "https://ms.gallerycdn.vsassets.io/extensions/ms/azure-artifacts/18.203.0.107787320/1652983730116/root/img/artifacts-icon.png";
     }
+    else {
+        // generic fallback icon
+        return "https://cdn.vsassets.io/content/icons/favicon.ico";
+    }
 }
 
 function setIcon(iconUrl) {
