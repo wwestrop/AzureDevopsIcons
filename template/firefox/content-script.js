@@ -31,7 +31,11 @@ function getIcon() {
 
     const url = window.location.href;
 
-    if (url.includes("/_dashboards")
+    const isRoot = /https:\/\/(?<org>[^\.]+).visualstudio.com\/(?<proj>[^\/]+)\/?$/.test(url)
+        || /https:\/\/dev.azure.com\/(?<org>[^\/]+)\/(?<project>[^\/]+)\/?$/.test(url);
+
+    if (isRoot
+        || url.includes("/_dashboards")
         || url.includes("/_analytics")
         || url.includes("/_wiki")) {
         return "https://cdn.vsassets.io/ext/ms.vss-tfs-web/platform-content/Nav-Dashboard.S24hPDN9_BLImMxi.png";
