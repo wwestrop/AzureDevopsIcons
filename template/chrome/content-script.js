@@ -41,7 +41,7 @@ function getIcon() {
     else if (url.includes("/_workitems")
         || url.includes("/_boards")
         || url.includes("/_backlogs")
-        || url.includes("/sprints")
+        || url.includes("/_sprints")
         || url.includes("/_queries")
         || url.includes("/_deliveryplans/")) {
         return "https://cdn.vsassets.io/ext/ms.vss-work-web/common-content/Content/Nav-Plan.XB8qU6v7kvBk_Tcy.png";
