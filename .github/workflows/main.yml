@@ -23,42 +23,19 @@ jobs:
         id: build
         run: node ./build.js
 
-      - name: Save artifact
-        uses: actions/upload-artifact@v4
-        with:
-          path: dist/*.zip
-          retention-days: 90      # This is the maximum
-
       - name: Create Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.build.outputs.PKG_VERSION }}
-          release_name: ${{ steps.build.outputs.PKG_VERSION }}
           body: |
             **Note:** This release is not signed and will not be loaded by the browser directly.
             You are best advised to download it from the appropriate browser's extension gallery:
             - [Firefox addons](https://addons.mozilla.org/en-GB/firefox/search/?q=Azure%20DevOps%20icon&type=extension)
             - [Chrome/Edge addons](https://chrome.google.com/webstore/detail/azure-devops-icons/pgbejjjgidgpciebpdiajlljpipdpcfe)
-      
-      - name: Upload Release Asset (Firefox)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/firefox/azure_devops_icons_${{ steps.build.outputs.PKG_VERSION }}.zip
-          asset_name: firefox_azure_devops_icons_${{ steps.build.outputs.PKG_VERSION }}.zip
-          asset_content_type: application/zip
-
-      - name: Upload Release Asset (Chrome)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/chrome/azure_devops_icons-${{ steps.build.outputs.PKG_VERSION }}.zip
-          asset_name: chrome_azure_devops_icons_${{ steps.build.outputs.PKG_VERSION }}.zip
-          asset_content_type: application/zip
+          name: ${{ steps.build.outputs.PKG_VERSION }}
+          tag_name: ${{ steps.build.outputs.PKG_VERSION }}
+          files: |
+              dist/firefox/firefox_azure_devops_icons-${{ steps.build.outputs.PKG_VERSION }}.zip
+              dist/chrome/chrome_azure_devops_icons-${{ steps.build.outputs.PKG_VERSION }}.zip
+          generate_release_notes: true
+          make_latest: true

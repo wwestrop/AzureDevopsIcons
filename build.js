@@ -30,10 +30,7 @@ const extensions = [
     { name: "Artifacts", icon: "artifacts.png", urlSuffix: "_artifacts", guid: "{a514e12a-c40d-4549-9541-79e72f0b3226}" }
 ];
 
-const version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" })).version;
-if (process.env["GITHUB_OUTPUT"]) {
-    fs.appendFile(process.env["GITHUB_OUTPUT"], `PKG_VERSION=${version}\n`);      // For GitHub runner
-}
+const version = await versionArtifact();
 
 execSync("npm install");
 
@@ -84,16 +81,21 @@ async function build(browser) {
         await Promise.all(signTasks);
     }
 
-    createPackage(browser);
+    await createPackage(browser, version);
 
     console.log(`\n  ---> ${extensions2.length} extensions created in dist/${browser.name}\n\n`);
 
 
 
-    function createPackage() {
+    async function createPackage(browser, version) {
 
         if (browser.name === "chrome") {
             // HACK
+            // Chrome comes as one extension, no need to collect them all.
+            // However the default filename needs distinguishing from Fx,
+            // otherwise one will overwrite the other when uploaded to GH release
+            // const rFile = `chrome_azure_devops_icons-${version}.zip`; // chrome_azure_devops_icons-1.0.93.zip
+            await fs.move(`dist/chrome/azure_devops_icons-${version}.zip`, `dist/chrome/chrome_azure_devops_icons-${version}.zip`);
             return;
         }
 
@@ -101,7 +103,6 @@ async function build(browser) {
     
         var zipFile = new zip();
         const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.zip`);
-        // const fileNames = extensions.map(e => `azure_devops_icon_${e.name.toLowerCase().replace(" ", "_")}_-${version}.xpi`);
     
         for (const fileName of fileNames) {
             const fileData = fs.readFileSync(`dist/${browser.name}/${fileName}`);
@@ -109,7 +110,24 @@ async function build(browser) {
         }
     
         zipFile.generateNodeStream({ type: "nodebuffer", streamFiles: true })
-            .pipe(fs.createWriteStream(`dist/${browser.name}/azure_devops_icons_${version}.zip`));
+            .pipe(fs.createWriteStream(`dist/${browser.name}/${browser.name}_azure_devops_icons-${version}.zip`));
     }
 
+}
+
+async function versionArtifact() {
+    let version = JSON.parse(await fs.readFile("package.json", { encoding: "utf8" })).version;
+
+    if (process.env["GITHUB_RUN_NUMBER"]) {
+        const versionPrefix = version.substr(0, version.lastIndexOf("."));
+        
+        version = `${versionPrefix}.${process.env["GITHUB_RUN_NUMBER"]}`;
+    }
+
+    if (process.env["GITHUB_OUTPUT"]) {
+        fs.appendFile(process.env["GITHUB_OUTPUT"], `PKG_VERSION=${version}\n`);      // For GitHub runner
+    }
+
+    console.log(`Artifact version will be ${version}\n\n`);
+    return version;
 }
