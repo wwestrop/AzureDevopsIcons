@@ -1,3 +1,4 @@
 ﻿dist/
 dist-chrome/
 node_modules/
+.DS_Store
