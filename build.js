@@ -68,21 +68,26 @@ async function build(browser) {
     }
 
     if (process.env["WEB_EXT_API_KEY"] && process.env["WEB_EXT_API_SECRET"]) {
-        const signTasks = extensions2.map(extension => webExt.cmd.sign({
-            apiKey: process.env["WEB_EXT_API_KEY"],
-            apiSecret: process.env["WEB_EXT_API_SECRET"],
-            amoBaseUrl: process.env["WEB_EXT_AMO_BASE_URL"] ?? "https://addons.mozilla.org/api/v5/",
-                                            // web-ext >= 10 talks only to the AMO submission API and requires this.
-                                            // The CLI defaults it, but cmd.sign() called from Node gets no yargs
-                                            // defaults, so leaving it out fails with "Invalid AMO API base URL: undefined".
-            channel: "unlisted",            // if you don't do this, despite being called "sign", it will actually publish it
-                                            // But not give you the XPI
-                                            // "Your add-on has been submitted for review. It passed validation but could not be automatically signed because this is a listed add-on."
-            sourceDir: `dist/${browser.name}/${extension.name}`, 
-            artifactsDir: `dist/${browser.name}`
-        }));
-
-        await Promise.all(signTasks);
+        // One at a time. Signing these in parallel trips AMO's submission rate limit
+        // ("Request was throttled. Expected available in 58 seconds."), and by the time
+        // the rejection lands the uploads have already gone through -- so the run dies
+        // having created add-on versions without downloading a single signed XPI.
+        for (const extension of extensions2) {
+            console.log(`Signing ${extension.name}...`);
+            await signWithRetry({
+                apiKey: process.env["WEB_EXT_API_KEY"],
+                apiSecret: process.env["WEB_EXT_API_SECRET"],
+                amoBaseUrl: process.env["WEB_EXT_AMO_BASE_URL"] ?? "https://addons.mozilla.org/api/v5/",
+                                                // web-ext >= 10 talks only to the AMO submission API and requires this.
+                                                // The CLI defaults it, but cmd.sign() called from Node gets no yargs
+                                                // defaults, so leaving it out fails with "Invalid AMO API base URL: undefined".
+                channel: "unlisted",            // if you don't do this, despite being called "sign", it will actually publish it
+                                                // But not give you the XPI
+                                                // "Your add-on has been submitted for review. It passed validation but could not be automatically signed because this is a listed add-on."
+                sourceDir: `dist/${browser.name}/${extension.name}`,
+                artifactsDir: `dist/${browser.name}`
+            });
+        }
     }
 
     await createPackage(browser, version);
@@ -117,6 +122,25 @@ async function build(browser) {
             .pipe(fs.createWriteStream(`dist/${browser.name}/${browser.name}_azure_devops_icons-${version}.zip`));
     }
 
+}
+
+// AMO's throttle response says how long to wait, so honour it rather than guessing.
+async function signWithRetry(params, attempts = 5) {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            return await webExt.cmd.sign(params);
+        }
+        catch (e) {
+            const throttledFor = /throttled.*?in (\d+) seconds/i.exec(e.message)?.[1];
+            if (!throttledFor || attempt === attempts) {
+                throw e;
+            }
+
+            const wait = Number(throttledFor) + 5;
+            console.log(`  throttled by AMO, retrying in ${wait}s (attempt ${attempt}/${attempts})`);
+            await new Promise(resolve => setTimeout(resolve, wait * 1000));
+        }
+    }
 }
 
 async function versionArtifact() {
