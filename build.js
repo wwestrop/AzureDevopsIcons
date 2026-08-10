@@ -71,6 +71,10 @@ async function build(browser) {
         const signTasks = extensions2.map(extension => webExt.cmd.sign({
             apiKey: process.env["WEB_EXT_API_KEY"],
             apiSecret: process.env["WEB_EXT_API_SECRET"],
+            amoBaseUrl: process.env["WEB_EXT_AMO_BASE_URL"] ?? "https://addons.mozilla.org/api/v5/",
+                                            // web-ext >= 10 talks only to the AMO submission API and requires this.
+                                            // The CLI defaults it, but cmd.sign() called from Node gets no yargs
+                                            // defaults, so leaving it out fails with "Invalid AMO API base URL: undefined".
             channel: "unlisted",            // if you don't do this, despite being called "sign", it will actually publish it
                                             // But not give you the XPI
                                             // "Your add-on has been submitted for review. It passed validation but could not be automatically signed because this is a listed add-on."
